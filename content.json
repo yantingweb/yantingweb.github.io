@@ -1,0 +1,77 @@
+{
+  "reviewed_for_publication": false,
+  "name": "Tingzhang Xu",
+  "email": "Xu181453121141@outlook.com",
+  "github": "https://github.com/yantingweb",
+  "cv_pdf": "",
+  "resume_pdf": "",
+  "affiliation": "Second-year undergraduate · Computer Science · Beijing University of Posts and Telecommunications",
+  "intro": "I work on robot learning and practical systems: humanoid motion tracking, dexterous-hand teleoperation, and perception-to-control pipelines.",
+  "research": [
+    {
+      "title": "G1 boxing: motion tracking & simulation evaluation",
+      "status": "Research-oriented engineering · 2026",
+      "background": "Adapt human motion to a Unitree G1 humanoid using an existing motion-tracking framework, and evaluate simulated contact forces.",
+      "contribution": "Selected and processed reference motions, iterated reward terms, and extended the evaluation tooling with a fixed-target mode and target-position sweeps. Built on upstream motion-tracking and PPO implementations.",
+      "stack": "Python · MuJoCo · mujoco-warp · RSL-RL / PPO · ONNX",
+      "result": "The project README reports a peak of approximately 303 N in a calibrated fixed-target simulation. This is a simulator contact-force reading, sensitive to target placement and domain randomization; it is not a hardware measurement or a repeated-trial mean.",
+      "url": "https://github.com/yantingweb/robotac-g1-boxing"
+    },
+    {
+      "title": "Aero Hand: monocular vision teleoperation",
+      "status": "Open-source reproduction & hardware integration · 2026",
+      "background": "Reproduce the upstream Aero Hand teleoperation pipeline and connect monocular hand tracking to an underactuated robotic hand.",
+      "contribution": "Adapted the runtime and serial I/O, built comparison and calibration tools, and debugged communication failures. Retargeting uses the upstream DexPilot implementation; I do not claim a new retargeting algorithm.",
+      "stack": "Python · OpenCV · MediaPipe · dex_retargeting / DexPilot · MuJoCo · serial I/O",
+      "result": "Hardware operation and calibration are documented in the public repository. The working hardware path uses a Windows single-process loop; ROS 2 simulation work is separate and does not establish a completed ROS 2 hardware bridge.",
+      "url": "https://github.com/yantingweb/aero-hand-vision-teleop"
+    },
+    {
+      "title": "RAPID reproduction",
+      "status": "In progress · scope awaiting confirmation",
+      "background": "A reproduction effort mentioned for this portfolio. The local experience library does not identify the exact RAPID paper.",
+      "contribution": "To be confirmed: paper, implementation source, personal contribution, current progress, and permitted public scope.",
+      "stack": "To be confirmed",
+      "result": "No publication or experimental result is claimed.",
+      "url": ""
+    }
+  ],
+  "projects": [
+    {
+      "title": "Aero Hand: monocular vision teleoperation",
+      "status": "Open-source reproduction & hardware integration · 2026",
+      "background": "Reproduce the upstream Aero Hand teleoperation pipeline and connect monocular hand tracking to an underactuated robotic hand.",
+      "contribution": "Adapted the runtime and serial I/O, built comparison and calibration tools, and debugged communication failures. Retargeting uses the upstream DexPilot implementation; I do not claim a new retargeting algorithm.",
+      "stack": "Python · OpenCV · MediaPipe · dex_retargeting / DexPilot · MuJoCo · serial I/O",
+      "result": "Hardware operation and calibration are documented in the public repository. The working hardware path uses a Windows single-process loop; ROS 2 simulation work is separate and does not establish a completed ROS 2 hardware bridge.",
+      "url": "https://github.com/yantingweb/aero-hand-vision-teleop"
+    },
+    {
+      "title": "G1 boxing: motion tracking & simulation evaluation",
+      "status": "Research-oriented engineering · 2026",
+      "background": "Adapt human motion to a Unitree G1 humanoid using an existing motion-tracking framework, and evaluate simulated contact forces.",
+      "contribution": "Selected and processed reference motions, iterated reward terms, and extended the evaluation tooling with a fixed-target mode and target-position sweeps. Built on upstream motion-tracking and PPO implementations.",
+      "stack": "Python · MuJoCo · mujoco-warp · RSL-RL / PPO · ONNX",
+      "result": "The project README reports a peak of approximately 303 N in a calibrated fixed-target simulation. This is a simulator contact-force reading, sensitive to target placement and domain randomization; it is not a hardware measurement or a repeated-trial mean.",
+      "url": "https://github.com/yantingweb/robotac-g1-boxing"
+    },
+    {
+      "title": "Visual tracking on a Raspberry Pi mobile robot",
+      "status": "Two-person course project · Spring 2026",
+      "background": "Connect a preconfigured mobile robot to PC-side object detection over a wireless network for visual tracking.",
+      "contribution": "Designed the system and implemented PC-side and Raspberry Pi-side code, including a framed TCP protocol, JPEG transmission, reconnection handling, and proportional control. Testing and setup were collaborative.",
+      "stack": "Python · Raspberry Pi 4B · TCP sockets · JPEG · YOLO · proportional control",
+      "result": "Local experience records report end-to-end latency decreasing from about 500 ms to 150–200 ms after transmission changes. The timing method and test conditions still need review; no public benchmark or repository is linked yet.",
+      "url": ""
+    },
+    {
+      "title": "BUPT information collector",
+      "status": "Personal software project · 2026",
+      "background": "Aggregate scattered university notices and surface relevant opportunities without repeatedly notifying the user.",
+      "contribution": "Implemented source adapters around a common Item schema, incremental deduplication, configurable relevance rules, notification channels, and visible failure diagnostics.",
+      "stack": "Python · Playwright · YAML · CLI · scheduled tasks",
+      "result": "The public repository documents the collection-to-notification architecture and operating commands. No user-count, availability, or notification-success-rate claim is made.",
+      "url": "https://github.com/yantingweb/bupt-information-collector"
+    }
+  ]
+}

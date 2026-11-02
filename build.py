@@ -1,62 +1,46 @@
-"""Build a dependency-free static portfolio. Python 3.9+."""
+"""Build Chinese recruiting pages and retain the English research portfolio."""
 import json
-from html import escape
+import shutil
+import subprocess
+import sys
+import re
 from pathlib import Path
-from urllib.parse import urlparse
+from html import escape as e
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / 'site'
-C = json.loads((ROOT / 'content.json').read_text(encoding='utf-8'))
-def e(value):
-    return escape(str(value), quote=True)
-def link(url, label, local=False):
-    if not url:
-        return '<span class="pending">' + e(label) + ' · coming soon</span>'
-    if local:
-        target = (OUT / url).resolve()
-        if not target.is_relative_to(OUT.resolve()) or not target.is_file() or target.suffix.lower() != '.pdf':
-            raise ValueError('PDF must exist inside site/: ' + url)
-    elif urlparse(url).scheme != 'https' or not urlparse(url).netloc:
-        raise ValueError('Use a full HTTPS URL: ' + url)
-    return '<a class="text-link" href="' + e(url) + '">' + e(label) + ' ↗</a>'
-
-NAV = [('index.html','Home'),('research.html','Research'),('projects.html','Projects'),('cv.html','CV / Resume'),('about.html','About / Contact')]
-def page(file, title, body):
-    nav = ''.join('<a '+('aria-current="page" ' if file == f else '')+'href="'+f+'">'+t+'</a>' for f,t in NAV)
-    draft = '<div class="draft">PREVIEW · Content awaits owner review. No publication or performance claims are verified.</div>' if not C['reviewed_for_publication'] else ''
-    html = f'''<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="{e(C['name'])}: embodied intelligence, robotics, research and engineering portfolio.">
-{'' if C['reviewed_for_publication'] else '<meta name="robots" content="noindex,nofollow">'}
-<title>{e(title)} · {e(C['name'])}</title><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="assets/style.css"></head>
-<body><a class="skip" href="#main">Skip to content</a>{draft}<header><a class="brand" href="index.html"><span class="brand-mark">↗</span> {e(C['name'])}</a><nav aria-label="Main navigation">{nav}</nav></header>
-<main id="main">{body}</main><footer><span>{e(C['name'])} · Research & engineering</span><span>Built with curiosity. Backed by evidence.</span><a href="about.html">Get in touch ↗</a></footer></body></html>'''
-    (OUT / file).write_text(html, encoding='utf-8')
-
+C = json.loads((ROOT/'content.json').read_text(encoding='utf-8'))
+P = json.loads((ROOT/'content-zh.json').read_text(encoding='utf-8'))
+NAV = [('index.html','首页'),('projects.html','项目'),('research.html','科研'),('cv.html','简历'),('about.html','联系')]
+EMAIL=e(C['email'])
+def page(file,title,body):
+    nav=''.join(f'<a href="{f}"'+(' aria-current="page"' if file==f else '')+f'>{t}</a>' for f,t in NAV)
+    html=f'''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} · 许庭彰</title><meta name="description" content="许庭彰，北邮计算机类本科生。机器人学习、灵巧手遥操作与 Python 工程项目。"><link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/recruit.css"><link rel="icon" href="assets/favicon.svg"></head><body class="recruit"><a class="skip" href="#main">跳到正文</a><header><a class="brand" href="index.html">许庭彰 <small>Tingzhang Xu</small></a><nav aria-label="主导航">{nav}<a href="en/index.html" lang="en">EN ↗</a></nav></header><main id="main">{body}</main><footer><span>许庭彰 · 北京邮电大学</span><span>机器人学习 / 工程系统</span><a href="mailto:{EMAIL}">邮件联系 ↗</a></footer></body></html>'''
+    (OUT/file).write_text(html,encoding='utf-8')
+def flow(p):
+    return '<div class="pipeline" aria-label="系统链路">'+''.join('<span>'+e(x)+'</span>' for x in p['flow'])+'</div>'
+def repo(p):
+    return f'<a class="text-link" href="{e(p["url"])}">查看代码与技术记录 ↗</a>' if p['url'] else ''
+def cards():
+    return ''.join(f'''<article class="project-card"><div class="card-top"><span class="eyebrow">0{i+1} / {e(p['scope'])}</span><a href="projects.html#{p['id']}" aria-label="查看{e(p['subtitle'])}详情">↗</a></div><h3><a href="projects.html#{p['id']}">{e(p['title'])}</a></h3><p class="subtitle">{e(p['subtitle'])}</p>{flow(p)}<p>{e(p['short'])}</p><div class="evidence">{e(p['evidence'])}</div><p class="stack">{e(p['stack'])}</p><div class="card-links"><a href="projects.html#{p['id']}">我的贡献与结果 →</a><a href="{e(p['url'])}">GitHub ↗</a></div></article>''' for i,p in enumerate(P[:3]))
 def cases(items):
-    return ''.join(f'''<article class="case"><div class="case-top"><span class="eyebrow">CASE {i:02}</span><span class="tag">{e(p['status'])}</span></div><h2>{e(p['title'])}</h2><dl><dt>Background</dt><dd>{e(p['background'])}</dd><dt>My contribution</dt><dd>{e(p['contribution'])}</dd><dt>Technical stack</dt><dd>{e(p['stack'])}</dd><dt>Evidence & results</dt><dd>{e(p['result'])}</dd></dl>{link(p['url'],'Project evidence')}</article>''' for i,p in enumerate(items,1))
+    return ''.join(f'''<article class="case" id="{p['id']}"><div class="case-top"><span class="eyebrow">{e(p['subtitle'])}</span><span class="tag">{e(p['scope'])}</span></div><h2>{e(p['title'])}</h2><p class="role">我的角色：{e(p['role'])}</p>{flow(p)}<dl><dt>要解决的问题</dt><dd>{e(p['problem'])}</dd><dt>我做了什么</dt><dd>{e(p['contribution'])}</dd><dt>结果与证据</dt><dd>{e(p['result'])}</dd><dt>技术栈</dt><dd>{e(p['stack'])}</dd></dl><details><summary>实验范围与贡献边界</summary><p>{e(p['boundary'])}</p></details>{repo(p)}</article>''' for p in items)
 
 OUT.mkdir(exist_ok=True)
-page('index.html','Home',f'''
-<section class="hero"><div><p class="eyebrow">ROBOTICS / EMBODIED INTELLIGENCE</p><h1>From ideas<br>to systems<br><em>that act.</em></h1><p class="intro">{e(C['intro'])}</p><p class="affiliation">{e(C['affiliation'])}</p><div class="buttons"><a class="button" href="research.html">Explore research <span>↗</span></a><a class="button secondary" href="projects.html">Explore projects <span>↗</span></a></div></div>
-<figure class="diagram"><div class="diagram-label"><span>PERCEPTION → ACTION</span><span>01 / SYSTEM VIEW</span></div><svg viewBox="0 0 440 400" role="img" aria-labelledby="diagram-title"><title id="diagram-title">Conceptual robot perception and action loop; an illustration, not an experimental result</title><defs><pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#b8c7c2"/></pattern></defs><rect width="440" height="400" fill="url(#grid)"/><ellipse cx="224" cy="310" rx="155" ry="42" fill="none" stroke="#9eafa9"/><path d="M70 310h308M224 270v80" stroke="#bbc8c1"/><path d="M194 301v-25l30-16 30 16v25l-30 16z" fill="#182f36"/><path d="M224 275l-25-64 57-77" fill="none" stroke="#182f36" stroke-width="23" stroke-linejoin="round"/><path d="M256 134l56 33" stroke="#d26b3d" stroke-width="18"/><path d="M311 164l16-17m-16 17l-4 23" stroke="#182f36" stroke-width="8"/><circle cx="199" cy="211" r="13" fill="#f7f5ed" stroke="#182f36" stroke-width="5"/><circle cx="256" cy="134" r="12" fill="#f7f5ed" stroke="#182f36" stroke-width="5"/><path d="M80 135l57-31 31 18-57 32z" fill="#d26b3d" opacity=".8"/><path d="M80 135v43l31 19v-43m0 43l57-32v-43" fill="none" stroke="#d26b3d" stroke-width="2"/><path d="M138 205q-25 40 5 60M301 245q44-38 32-64" fill="none" stroke="#7f9489" stroke-dasharray="5 5"/><text x="56" y="82" font-family="monospace" font-size="11" fill="#49625a">OBSERVE</text><text x="306" y="229" font-family="monospace" font-size="11" fill="#49625a">ACT</text></svg><figcaption>A conceptual loop: observe, reason, act, evaluate.</figcaption></figure></section>
-<section class="paths"><div><p class="eyebrow">TWO WAYS IN</p><h2>Research questions.<br>Engineering decisions.</h2></div><a class="path" href="research.html"><span class="eyebrow">FOR RESEARCH GROUPS</span><h3>How I investigate <span>↗</span></h3><p>Research interests, reproduction notes, and evidence of experimental work.</p></a><a class="path" href="projects.html"><span class="eyebrow">FOR ENGINEERING TEAMS</span><h3>How I build <span>↗</span></h3><p>Project context, personal contributions, technical choices, and verifiable outcomes.</p></a></section>
-<section class="selected"><div><p class="eyebrow">CURRENT FOCUS</p><h2>Build. Measure. Investigate.</h2><p>My current portfolio connects humanoid motion tracking, dexterous-hand teleoperation, and perception-to-control engineering. I distinguish upstream algorithms from my integration and evaluation work.</p></div><a class="text-link" href="research.html">View research notes ↗</a></section>''')
-page('research.html','Research','''<section class="page-heading"><p class="eyebrow">01 / RESEARCH</p><h1>Questions into<br><em>experiments.</em></h1><p>Interests in embodied intelligence and robotics, developed through reproduction and careful evaluation.</p></section>'''+cases(C['research'])+'''<aside class="note"><h3>Publication status</h3><p>No peer-reviewed publication is claimed here. Reproductions, work in progress, preprints, and accepted papers must be labeled separately, with original sources and accurate authorship.</p></aside>''')
-page('projects.html','Projects','''<section class="page-heading"><p class="eyebrow">02 / PROJECTS</p><h1>Make it work.<br><em>Show the evidence.</em></h1><p>Engineering case studies organized around the problem, my contribution, and what can be verified.</p></section>'''+cases(C['projects']))
-page('cv.html','CV / Resume',f'''<section class="page-heading"><p class="eyebrow">03 / EXPERIENCE</p><h1>One background.<br><em>Two perspectives.</em></h1><p>Choose the document that matches your context.</p></section><section class="experience"><p class="eyebrow">EDUCATION & TECHNICAL PRACTICE</p><h2>Beijing University of Posts and Telecommunications</h2><p>Undergraduate, entering class of 2025 · Computer Science (Yuan program), following a transfer in October 2026. Chinese name: 许庭彰.</p><p>Project experience: humanoid motion tracking, robotic-hand teleoperation, mobile-robot perception and control, and Python automation. See the linked case studies for individual contributions and their limits.</p><p>Tools used across projects: Python, MuJoCo, PPO training tooling, OpenCV, MediaPipe, TCP sockets, serial communication, and Playwright.</p></section><div class="document-grid"><article class="case"><p class="eyebrow">ACADEMIC</p><h2>Curriculum vitae</h2><p>Education, research experience, experimental contributions, and accurately labeled scholarly work.</p>{link(C['cv_pdf'],'Academic CV (PDF)',True)}</article><article class="case"><p class="eyebrow">INDUSTRY</p><h2>Technical resume</h2><p>A concise account of engineering projects, individual responsibilities, and supported outcomes.</p>{link(C['resume_pdf'],'Technical resume (PDF)',True)}</article></div><aside class="note">Documents have not been supplied yet. Downloads become available only after real PDFs are added.</aside>''')
-email = C['email']
-if email and (any(x in email for x in '\r\n ?&#') or '@' not in email):
-    raise ValueError('Invalid email')
-contact = f'<a class="text-link" href="mailto:{e(email)}">{e(email)} ↗</a>' if email else '<span class="pending">Contact email · to be added</span>'
-page('about.html','About / Contact',f'''<section class="page-heading"><p class="eyebrow">04 / ABOUT</p><h1>Curious about<br><em>intelligent machines.</em></h1><p>{e(C['affiliation'])}</p></section><section class="about-grid"><div><p class="eyebrow">许庭彰 / TINGZHANG XU</p><h2>About me</h2><p>{e(C['intro'])}</p><p>This portfolio brings research reproduction and engineering work together. My experience spans humanoid simulation, robotic-hand hardware integration, mobile-robot control, and software tooling. I am interested in research opportunities and technical internships in robotics and AI systems.</p><h2>What I want to explore</h2><p>Embodied intelligence, robotics, and the relationship between experimental ideas and working systems.</p></div><aside class="contact"><p class="eyebrow">LET’S CONNECT</p><h2>Start a conversation.</h2><p>For research opportunities and technical roles.</p>{contact}<br>{link(C['github'],'GitHub')}</aside></section>''')
-(OUT / '.nojekyll').touch()
-print('Built 5 pages in ' + str(OUT))
-
-# Keep branch-based Pages and the Actions artifact identical.
-# This also supports repositories already configured to serve main at /.
-import shutil
-for generated in OUT.glob('*.html'):
-    shutil.copy2(generated, ROOT / generated.name)
-shutil.copytree(OUT / 'assets', ROOT / 'assets', dirs_exist_ok=True)
-(ROOT / '.nojekyll').touch()
+page('index.html','首页',f'''<section class="recruit-hero"><div><p class="eyebrow">机器人学习 · 实机集成 · PYTHON 工程</p><h1>许庭彰<span>Tingzhang Xu</span></h1><p class="identity">北京邮电大学 · 计算机类（元班）· 大二</p><p class="lead">从机器人动作训练，到视觉与硬件闭环。<br>我关注算法如何在具体系统中运行、调试和验证。</p><div class="buttons"><a class="button" href="cv.html">查看简历 <span>↗</span></a><a class="button secondary" href="projects.html">浏览项目 <span>↓</span></a></div></div><aside class="profile-summary"><span class="eyebrow">机会方向</span><h2>机器人 / AI 工程实习<br>具身智能科研机会</h2><dl><dt>已有实践</dt><dd>G1 运动跟踪、灵巧手遥操作、视觉控制、Python 自动化</dd><dt>项目证据</dt><dd>三个公开仓库，附实现与技术记录</dd><dt>联系</dt><dd><a href="mailto:{EMAIL}">{EMAIL}</a></dd></dl><a class="text-link" href="{e(C['github'])}">GitHub / yantingweb ↗</a></aside></section><section class="featured"><div class="section-title"><div><p class="eyebrow">SELECTED WORK</p><h2>先看这三个项目</h2></div><a class="text-link" href="projects.html">全部项目 →</a></div><div class="project-grid">{cards()}</div></section><section class="audience"><div><p class="eyebrow">技术岗位</p><h2>看系统实现与排错能力</h2><p>环境适配、协议调试、模块设计，以及从问题定位到验证的过程。</p><a class="text-link" href="cv.html">查看求职简历 →</a></div><div><p class="eyebrow">科研申请</p><h2>看复现与实验判断</h2><p>动作跟踪、重定向复现与评估可靠性；明确区分上游算法和个人贡献。</p><a class="text-link" href="research.html">查看科研实践 →</a></div></section>''')
+page('projects.html','项目','''<section class="page-heading"><p class="eyebrow">PROJECTS / 工程实践</p><h1>做了什么，<br>如何验证。</h1><p>按问题、个人贡献和证据展开，代码与技术文档可直接查看。</p></section>'''+cases(P))
+page('research.html','科研','''<section class="page-heading"><p class="eyebrow">RESEARCH / 科研实践</p><h1>机器人学习，<br>从复现与验证开始。</h1><p>关注运动跟踪、视觉重定向，以及仿真评估与实机系统之间的差异。以下是研究导向的工程实践，非正式发表论文。</p></section>'''+cases([P[1],P[0]]))
+resume_projects=''.join(f'''<article class="resume-project"><h3>{e(p['subtitle'])}</h3><p><strong>个人贡献：</strong>{e(p['contribution'])}</p><p><strong>结果：</strong>{e(p['result'])}</p>{repo(p)}</article>''' for p in P[:3])
+page('cv.html','简历',f'''<section class="resume-header"><div><p class="eyebrow">RESUME / 求职简历</p><h1>许庭彰 <span>Tingzhang Xu</span></h1><p>机器人 / AI 工程实习 · 具身智能科研机会</p><p><a href="mailto:{EMAIL}">{EMAIL}</a> · <a href="{e(C['github'])}">github.com/yantingweb</a></p></div><button class="button" type="button" id="print-resume">打印 / 保存 PDF ↗</button></section><section class="resume-section"><h2>教育背景</h2><p><strong>北京邮电大学 · 未来学院 · 计算机类（元班）</strong></p><p>2025 级本科生，现大二；2026 年 10 月由低空技术与工程转入计算机类。</p></section><section class="resume-section"><h2>技术实践</h2><p><strong>机器人与视觉：</strong>MuJoCo、PPO 训练工具链、OpenCV、MediaPipe、DexPilot 使用与标定。</p><p><strong>工程与工具：</strong>Python、TCP Socket、串口通信、树莓派、Playwright、命令行与定时任务。</p></section><section class="resume-section"><h2>代表项目</h2>{resume_projects}</section><script src="assets/print.js" defer></script>''')
+page('about.html','联系',f'''<section class="page-heading"><p class="eyebrow">ABOUT / CONTACT</p><h1>许庭彰</h1><p>北邮计算机类本科生，关注机器人学习与工程系统。</p></section><section class="about-grid"><div><h2>从具体问题开始</h2><p>我在 G1 动作训练、灵巧手遥操作、树莓派视觉小车和 Python 工具项目中，积累了环境适配、通信排错、系统集成与实验验证经验。</p><p>希望继续参与机器人、具身智能与 AI 系统方向的研究或工程工作，在实际问题中加深算法和计算机系统基础。</p><a class="text-link" href="cv.html">查看简历 →</a></div><aside class="contact"><p class="eyebrow">联系我</p><h2>科研合作 / 技术实习</h2><a class="text-link" href="mailto:{EMAIL}">{EMAIL}</a><br><a class="text-link" href="{e(C['github'])}">GitHub / yantingweb ↗</a></aside></section>''')
+(OUT/'assets'/'print.js').write_text("document.getElementById('print-resume').addEventListener('click', () => window.print());\n",encoding='utf-8')
+subprocess.run([sys.executable,str(ROOT/'build_en.py')],check=True)
+# English mirrors use the same up-to-date Chinese resume instead of dead PDF links.
+en_cv=OUT/'en'/'cv.html'
+s=en_cv.read_text(encoding='utf-8')
+s=re.sub(r'<div class="document-grid">.*?</aside>', '<p><a class="text-link" href="../cv.html">Read the current Chinese resume / Print to PDF ↗</a></p>', s, flags=re.S)
+en_cv.write_text(s,encoding='utf-8')
+for p in OUT.glob('*.html'): shutil.copy2(p,ROOT/p.name)
+for name in ['assets','en']: shutil.copytree(OUT/name,ROOT/name,dirs_exist_ok=True)
+(ROOT/'.nojekyll').touch()
+print('Built Chinese recruiting website and English portfolio.')

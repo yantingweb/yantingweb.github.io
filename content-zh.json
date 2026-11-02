@@ -1,0 +1,86 @@
+[
+  {
+    "id": "hand",
+    "title": "让灵巧手跟随人手运动",
+    "subtitle": "Aero Hand · 单目视觉遥操作",
+    "role": "个人复现与实机集成",
+    "scope": "实机链路",
+    "problem": "将摄像头捕获的人手动作映射到欠驱动灵巧手，让视觉、重定向和硬件通信形成闭环。",
+    "contribution": "适配 Windows 运行环境与串口 I/O，排查探测超时、读帧不完整和残留帧问题；编写数值对照与尺度标定工具。",
+    "result": "完成 Windows 单进程实机遥操作链路，公开仓库提供通信排错、标定与验证文档。",
+    "boundary": "重定向采用上游 DexPilot；个人贡献集中在环境适配、通信、标定与验证。",
+    "stack": "Python / OpenCV / MediaPipe / DexPilot / MuJoCo",
+    "flow": [
+      "摄像头",
+      "手部关键点",
+      "动作重定向",
+      "串口 → 灵巧手"
+    ],
+    "url": "https://github.com/yantingweb/aero-hand-vision-teleop",
+    "short": "打通视觉到硬件的闭环，定位串口协议问题，并为标定建立对照工具。",
+    "evidence": "实机集成与标定文档"
+  },
+  {
+    "id": "boxing",
+    "title": "训练 G1 拳击动作，验证仿真结果",
+    "subtitle": "Unitree G1 · 运动跟踪与评估",
+    "role": "动作处理、奖励迭代与评估扩展",
+    "scope": "仿真实验",
+    "problem": "基于现有运动跟踪框架迁移拳击动作，并评估接触力读数是否能反映有效的仿真碰撞。",
+    "contribution": "筛选、裁切与桥接参考动作；迭代手臂跟踪及拳速奖励；扩展固定靶评估与三维靶位扫描，分析靶位和接触伪影对读数的影响。",
+    "result": "项目记录的标定仿真固定靶峰值约 303 N；同时记录了靶位偏差与随机化对结果的敏感性。",
+    "boundary": "303 N 是特定条件下的仿真接触力峰值，不代表真机力度或多次实验均值。训练基于上游运动跟踪与 PPO 框架。",
+    "stack": "Python / MuJoCo / mujoco-warp / RSL-RL PPO / ONNX",
+    "flow": [
+      "参考动作",
+      "PPO 跟踪训练",
+      "固定靶评估",
+      "靶位扫描"
+    ],
+    "url": "https://github.com/yantingweb/robotac-g1-boxing",
+    "short": "从动作数据处理到奖励迭代，再通过固定靶与靶位扫描检查评估可靠性。",
+    "evidence": "约 303 N · 仿真固定靶峰值"
+  },
+  {
+    "id": "collector",
+    "title": "把分散通知变成可行动的信息",
+    "subtitle": "BUPT Information Collector · Python 工具",
+    "role": "个人软件项目",
+    "scope": "开源工具",
+    "problem": "校园通知分散在多个来源，重复信息与低相关内容增加查阅成本。",
+    "contribution": "围绕统一 Item 数据结构实现来源适配、增量去重、可配置规则评分与推送通道；加入失败日志、非零退出码和诊断命令。",
+    "result": "公开仓库提供采集 → 去重 → 判读 → 推送的完整实现、命令行入口和部署说明。",
+    "boundary": "未声称用户规模、推送成功率或服务可用性指标。",
+    "stack": "Python / Playwright / YAML / CLI / 定时任务",
+    "flow": [
+      "多源采集",
+      "增量去重",
+      "规则评分",
+      "通知与诊断"
+    ],
+    "url": "https://github.com/yantingweb/bupt-information-collector",
+    "short": "用统一数据契约连接采集与推送，重点处理去重、规则配置和静默失败。",
+    "evidence": "可查看实现与部署说明"
+  },
+  {
+    "id": "car",
+    "title": "树莓派视觉追踪小车",
+    "subtitle": "课程项目 · 2026 年春",
+    "role": "系统设计与两端代码实现",
+    "scope": "两人课程项目",
+    "problem": "通过无线网络连接预配置的小车与 PC 端目标检测，实现视觉追踪控制。",
+    "contribution": "设计 TCP 分帧协议，实现 PC 与树莓派两端代码、JPEG 传输、断线重连和比例控制；环境与测试由团队协作完成。",
+    "result": "实现图像采集、PC 推理与控制指令回传的闭环；对传输负载和连接恢复进行了优化。",
+    "boundary": "暂不展示尚未复核测试口径的延迟数字；此项目未提供公开代码链接。",
+    "stack": "Python / Raspberry Pi / TCP Socket / YOLO / P 控制",
+    "flow": [
+      "树莓派采集",
+      "JPEG / TCP",
+      "PC 检测",
+      "控制指令回传"
+    ],
+    "url": "",
+    "short": "连接网络、视觉推理和底盘控制，处理分帧传输与断线恢复。",
+    "evidence": "系统集成实践"
+  }
+]

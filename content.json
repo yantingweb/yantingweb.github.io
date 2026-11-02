@@ -25,15 +25,6 @@
       "stack": "Python · OpenCV · MediaPipe · dex_retargeting / DexPilot · MuJoCo · serial I/O",
       "result": "Hardware operation and calibration are documented in the public repository. The working hardware path uses a Windows single-process loop; ROS 2 simulation work is separate and does not establish a completed ROS 2 hardware bridge.",
       "url": "https://github.com/yantingweb/aero-hand-vision-teleop"
-    },
-    {
-      "title": "RAPID reproduction",
-      "status": "In progress · scope awaiting confirmation",
-      "background": "A reproduction effort mentioned for this portfolio. The local experience library does not identify the exact RAPID paper.",
-      "contribution": "To be confirmed: paper, implementation source, personal contribution, current progress, and permitted public scope.",
-      "stack": "To be confirmed",
-      "result": "No publication or experimental result is claimed.",
-      "url": ""
     }
   ],
   "projects": [

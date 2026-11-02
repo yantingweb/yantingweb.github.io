@@ -4,7 +4,7 @@
 
 ## 本次更新
 
-已结合指定经历库完成个人化内容。先阅读 `CONTENT_REVIEW.md` 了解取舍、资料冲突与发布前仍需确认的事项。目标仓库为 `yantingweb.github.io`，尚未创建或部署。
+已结合指定经历库完成个人化内容。先阅读 `CONTENT_REVIEW.md` 了解取舍、资料冲突与发布前仍需确认的事项。仓库：`yantingweb/yantingweb.github.io`。已获本人批准公开，正式地址：https://yantingweb.github.io/ 。
 
 ## 本地查看
 
@@ -57,3 +57,7 @@ https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-
 ## 文件
 
 `content.json` 内容入口；`build.py` 生成页面；`site/` 可直接发布的网站；`.github/workflows/pages.yml` 部署工作流；`CONTENT_CHECKLIST.md` 待填和发布检查清单。
+
+## 发布兼容性
+
+构建同时更新 `site/` 和根目录的五页及 assets/，确保已启用的 main 根目录发布与 Actions 的 site/ 产物一致。请通过 build.py 更新，不要单独编辑任何生成的 HTML。推荐最终在 Settings → Pages 选择 GitHub Actions。

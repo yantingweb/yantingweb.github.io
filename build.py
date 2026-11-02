@@ -52,3 +52,11 @@ contact = f'<a class="text-link" href="mailto:{e(email)}">{e(email)} ↗</a>' if
 page('about.html','About / Contact',f'''<section class="page-heading"><p class="eyebrow">04 / ABOUT</p><h1>Curious about<br><em>intelligent machines.</em></h1><p>{e(C['affiliation'])}</p></section><section class="about-grid"><div><p class="eyebrow">许庭彰 / TINGZHANG XU</p><h2>About me</h2><p>{e(C['intro'])}</p><p>This portfolio brings research reproduction and engineering work together. My experience spans humanoid simulation, robotic-hand hardware integration, mobile-robot control, and software tooling. I am interested in research opportunities and technical internships in robotics and AI systems.</p><h2>What I want to explore</h2><p>Embodied intelligence, robotics, and the relationship between experimental ideas and working systems.</p></div><aside class="contact"><p class="eyebrow">LET’S CONNECT</p><h2>Start a conversation.</h2><p>For research opportunities and technical roles.</p>{contact}<br>{link(C['github'],'GitHub')}</aside></section>''')
 (OUT / '.nojekyll').touch()
 print('Built 5 pages in ' + str(OUT))
+
+# Keep branch-based Pages and the Actions artifact identical.
+# This also supports repositories already configured to serve main at /.
+import shutil
+for generated in OUT.glob('*.html'):
+    shutil.copy2(generated, ROOT / generated.name)
+shutil.copytree(OUT / 'assets', ROOT / 'assets', dirs_exist_ok=True)
+(ROOT / '.nojekyll').touch()
